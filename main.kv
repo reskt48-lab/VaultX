@@ -1,0 +1,740 @@
+#:import dp kivy.metrics.dp
+
+
+# ==========================================================
+# INPUT
+# ==========================================================
+
+<DarkInput@TextInput>:
+
+    size_hint_y: None
+    height: dp(48)
+
+    background_normal: ""
+    background_active: ""
+
+    background_color: 0.08, 0.09, 0.12, 1
+
+    foreground_color: 0.95, 0.96, 1, 1
+
+    hint_text_color: 0.45, 0.48, 0.55, 1
+
+    cursor_color: 0.25, 0.55, 1, 1
+
+    padding: dp(14), dp(12)
+
+    multiline: False
+
+
+# ==========================================================
+# PRIMARY BUTTON
+# ==========================================================
+
+<PrimaryButton@Button>:
+
+    size_hint_y: None
+    height: dp(50)
+
+    background_normal: ""
+
+    background_color: 0.16, 0.43, 0.82, 1
+
+    color: 1, 1, 1, 1
+
+    bold: True
+
+
+# ==========================================================
+# SECONDARY BUTTON
+# ==========================================================
+
+<SecondaryButton@Button>:
+
+    size_hint_y: None
+    height: dp(45)
+
+    background_normal: ""
+
+    background_color: 0.12, 0.13, 0.17, 1
+
+    color: 0.85, 0.87, 0.92, 1
+
+
+# ==========================================================
+# SCREEN MANAGER
+# ==========================================================
+
+ScreenManager:
+
+
+    # ======================================================
+    # SETUP
+    # ======================================================
+
+    Screen:
+
+        name: "setup"
+
+
+        BoxLayout:
+
+            orientation: "vertical"
+
+            padding: dp(35)
+
+            spacing: dp(10)
+
+
+            Widget:
+                size_hint_y: 0.12
+
+
+            Label:
+
+                text: "VAULTX"
+
+                font_size: "32sp"
+
+                bold: True
+
+                color: 0.30, 0.60, 1, 1
+
+                size_hint_y: None
+
+                height: dp(55)
+
+
+            Label:
+
+                text: "LOCAL PASSWORD MANAGER"
+
+                font_size: "14sp"
+
+                color: 0.55, 0.58, 0.65, 1
+
+                size_hint_y: None
+
+                height: dp(30)
+
+
+            Widget:
+                size_hint_y: 0.04
+
+
+            Label:
+
+                text: "Create Master Password"
+
+                font_size: "17sp"
+
+                bold: True
+
+                halign: "left"
+
+                size_hint_y: None
+
+                height: dp(32)
+
+
+            DarkInput:
+
+                id: master_password
+
+                hint_text: "Master Password"
+
+                password: True
+
+
+            BoxLayout:
+
+                size_hint_y: None
+
+                height: dp(45)
+
+                spacing: dp(8)
+
+
+                Button:
+
+                    text: "SHOW / HIDE"
+
+                    background_normal: ""
+
+                    background_color: 0.12, 0.13, 0.17, 1
+
+                    on_release:
+
+                        app.toggle_password(
+                        "master_password"
+                        )
+
+
+            DarkInput:
+
+                id: confirm_password
+
+                hint_text: "Confirm Master Password"
+
+                password: True
+
+
+            Label:
+
+                id: password_status
+
+                text: "Password minimal 12 karakter."
+
+                font_size: "12sp"
+
+                halign: "left"
+
+                valign: "middle"
+
+                text_size: self.width, None
+
+                color: 0.55, 0.58, 0.65, 1
+
+                size_hint_y: None
+
+                height: dp(105)
+
+
+            PrimaryButton:
+
+                text: "CHECK PASSWORD"
+
+                on_release:
+
+                    app.check_master_password()
+
+
+            PrimaryButton:
+
+                text: "CREATE VAULT"
+
+                on_release:
+
+                    app.create_vault()
+
+
+            Label:
+
+                text: "Vault disimpan dan dienkripsi secara lokal."
+
+                font_size: "11sp"
+
+                color: 0.40, 0.43, 0.50, 1
+
+                size_hint_y: None
+
+                height: dp(25)
+
+
+            Widget:
+                size_hint_y: 0.2
+
+
+
+    # ======================================================
+    # LOGIN
+    # ======================================================
+
+    Screen:
+
+        name: "login"
+
+
+        BoxLayout:
+
+            orientation: "vertical"
+
+            padding: dp(35)
+
+            spacing: dp(12)
+
+
+            Widget:
+                size_hint_y: 0.25
+
+
+            Label:
+
+                text: "VAULTX"
+
+                font_size: "32sp"
+
+                bold: True
+
+                color: 0.30, 0.60, 1, 1
+
+                size_hint_y: None
+
+                height: dp(55)
+
+
+            Label:
+
+                text: "UNLOCK YOUR VAULT"
+
+                font_size: "14sp"
+
+                color: 0.55, 0.58, 0.65, 1
+
+                size_hint_y: None
+
+                height: dp(35)
+
+
+            DarkInput:
+
+                id: password
+
+                hint_text: "Master Password"
+
+                password: True
+
+                on_text_validate:
+
+                    app.login()
+
+
+            Button:
+
+                text: "SHOW / HIDE"
+
+                size_hint_y: None
+
+                height: dp(45)
+
+                background_normal: ""
+
+                background_color: 0.12, 0.13, 0.17, 1
+
+                on_release:
+
+                    app.toggle_password(
+                    "password"
+                    )
+
+
+            PrimaryButton:
+
+                text: "UNLOCK VAULT"
+
+                on_release:
+
+                    app.login()
+
+
+            Label:
+
+                text: "Your passwords stay encrypted locally."
+
+                font_size: "11sp"
+
+                color: 0.40, 0.43, 0.50, 1
+
+                size_hint_y: None
+
+                height: dp(25)
+
+
+            Widget:
+                size_hint_y: 0.3
+
+
+
+    # ======================================================
+    # VAULT
+    # ======================================================
+
+    Screen:
+
+        name: "vault"
+
+
+        BoxLayout:
+
+            orientation: "vertical"
+
+            padding: dp(18)
+
+            spacing: dp(10)
+
+
+            BoxLayout:
+
+                size_hint_y: None
+
+                height: dp(50)
+
+
+                Label:
+
+                    text: "MY VAULT"
+
+                    font_size: "23sp"
+
+                    bold: True
+
+                    halign: "left"
+
+
+                Button:
+
+                    text: "LOCK"
+
+                    size_hint_x: None
+
+                    width: dp(85)
+
+                    background_normal: ""
+
+                    background_color: 0.12, 0.13, 0.17, 1
+
+                    on_release:
+
+                        app.logout()
+
+
+            DarkInput:
+
+                id: search
+
+                hint_text: "Search website or username..."
+
+                on_text:
+
+                    app.search_accounts()
+
+
+            Label:
+
+                id: count
+
+                text: "0 akun"
+
+                color: 0.50, 0.52, 0.58, 1
+
+                halign: "left"
+
+                size_hint_y: None
+
+                height: dp(25)
+
+
+            ScrollView:
+
+
+                GridLayout:
+
+                    id: entry_list
+
+                    cols: 1
+
+                    spacing: dp(8)
+
+                    size_hint_y: None
+
+                    height: self.minimum_height
+
+
+            PrimaryButton:
+
+                text: "+ ADD PASSWORD"
+
+                on_release:
+
+                    root.manager.current = "add"
+
+
+
+    # ======================================================
+    # ADD ACCOUNT
+    # ======================================================
+
+    Screen:
+
+        name: "add"
+
+
+        BoxLayout:
+
+            orientation: "vertical"
+
+            padding: dp(20)
+
+            spacing: dp(10)
+
+
+            Label:
+
+                text: "ADD PASSWORD"
+
+                font_size: "24sp"
+
+                bold: True
+
+                size_hint_y: None
+
+                height: dp(50)
+
+
+            DarkInput:
+
+                id: website
+
+                hint_text: "Website / Application"
+
+
+            DarkInput:
+
+                id: username
+
+                hint_text: "Username / Email"
+
+
+            BoxLayout:
+
+                size_hint_y: None
+
+                height: dp(48)
+
+                spacing: dp(8)
+
+
+                DarkInput:
+
+                    id: account_password
+
+                    hint_text: "Password"
+
+                    password: True
+
+
+                Button:
+
+                    text: "SHOW"
+
+                    size_hint_x: None
+
+                    width: dp(65)
+
+                    background_normal: ""
+
+                    background_color: 0.12, 0.13, 0.17, 1
+
+                    on_release:
+
+                        app.toggle_password(
+                        "account_password"
+                        )
+
+
+            BoxLayout:
+
+                size_hint_y: None
+
+                height: dp(45)
+
+                spacing: dp(8)
+
+
+                Button:
+
+                    text: "GENERATE STRONG PASSWORD"
+
+                    background_normal: ""
+
+                    background_color: 0.16, 0.43, 0.82, 1
+
+                    on_release:
+
+                        app.generate_password(
+                        "account_password"
+                        )
+
+
+            DarkInput:
+
+                id: note
+
+                hint_text: "Notes"
+
+                multiline: True
+
+                height: dp(90)
+
+
+            Widget:
+
+
+            PrimaryButton:
+
+                text: "SAVE PASSWORD"
+
+                on_release:
+
+                    app.add_account()
+
+
+            SecondaryButton:
+
+                text: "CANCEL"
+
+                on_release:
+
+                    root.manager.current = "vault"
+
+
+
+    # ======================================================
+    # EDIT ACCOUNT
+    # ======================================================
+
+    Screen:
+
+        name: "edit"
+
+        entry_id: ""
+
+
+        BoxLayout:
+
+            orientation: "vertical"
+
+            padding: dp(20)
+
+            spacing: dp(10)
+
+
+            Label:
+
+                text: "EDIT PASSWORD"
+
+                font_size: "24sp"
+
+                bold: True
+
+                size_hint_y: None
+
+                height: dp(50)
+
+
+            DarkInput:
+
+                id: website
+
+                hint_text: "Website / Application"
+
+
+            DarkInput:
+
+                id: username
+
+                hint_text: "Username / Email"
+
+
+            BoxLayout:
+
+                size_hint_y: None
+
+                height: dp(48)
+
+                spacing: dp(8)
+
+
+                DarkInput:
+
+                    id: account_password
+
+                    hint_text: "Password"
+
+                    password: True
+
+
+                Button:
+
+                    text: "SHOW"
+
+                    size_hint_x: None
+
+                    width: dp(65)
+
+                    background_normal: ""
+
+                    background_color: 0.12, 0.13, 0.17, 1
+
+                    on_release:
+
+                        app.toggle_password(
+                        "account_password"
+                        )
+
+
+            Button:
+
+                text: "GENERATE STRONG PASSWORD"
+
+                size_hint_y: None
+
+                height: dp(45)
+
+                background_normal: ""
+
+                background_color: 0.16, 0.43, 0.82, 1
+
+                on_release:
+
+                    app.generate_password(
+                    "account_password"
+                    )
+
+
+            DarkInput:
+
+                id: note
+
+                hint_text: "Notes"
+
+                multiline: True
+
+                height: dp(90)
+
+
+            Widget:
+
+
+            PrimaryButton:
+
+                text: "UPDATE PASSWORD"
+
+                on_release:
+
+                    app.update_account()
+
+
+            Button:
+
+                text: "DELETE PASSWORD"
+
+                size_hint_y: None
+
+                height: dp(50)
+
+                background_normal: ""
+
+                background_color: 0.65, 0.15, 0.15, 1
+
+                on_release:
+
+                    app.confirm_delete()
+
+
+            SecondaryButton:
+
+                text: "CANCEL"
+
+                on_release:
+
+                    root.manager.current = "vault"
