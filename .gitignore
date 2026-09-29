@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Kivy
+.kivy/
+
+# Buildozer
+.buildozer/
+bin/
+
+# Build files
+*.apk
+*.aab
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# OS
+Thumbs.db
+.DS_Store
