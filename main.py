@@ -1,23 +1,24 @@
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 from kivy.app import App
 from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.uix.popup import Popup
+from kivy.uix.label import Label
 
 from screens import LoginScreen, RegisterScreen
+from dashboard import DashboardScreen
 
 
 class LoginPage(Screen):
-
-    def __init__(self, app, **kwargs):
-        super().__init__(**kwargs)
-        self.add_widget(LoginScreen(app))
+    pass
 
 
 class RegisterPage(Screen):
+    pass
 
-    def __init__(self, app, **kwargs):
-        super().__init__(**kwargs)
-        self.add_widget(RegisterScreen(app))
+
+class DashboardPage(Screen):
+    pass
 
 
 class VaultXApp(App):
@@ -25,21 +26,29 @@ class VaultXApp(App):
     def build(self):
         self.title = "VaultX"
 
-        self.screen_manager = ScreenManager()
+        manager = ScreenManager()
 
-        self.login_page = LoginPage(self, name="login")
-        self.register_page = RegisterPage(self, name="register")
+        manager.add_widget(LoginPage(name="login"))
+        manager.add_widget(RegisterPage(name="register"))
+        manager.add_widget(DashboardPage(name="dashboard"))
 
-        self.screen_manager.add_widget(self.login_page)
-        self.screen_manager.add_widget(self.register_page)
-
-        return self.screen_manager
+        return manager
 
     def show_login(self):
-        self.screen_manager.current = "login"
+        self.root.current = "login"
 
     def show_register(self):
-        self.screen_manager.current = "register"
+        self.root.current = "register"
+
+    def show_dashboard(self):
+        self.root.current = "dashboard"
+
+    def show_message(self, message):
+        Popup(
+            title="VaultX",
+            content=Label(text=message),
+            size_hint=(0.8, 0.3),
+        ).open()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,214 @@
+<LoginPage>:
+    LoginScreen:
+        app: app
+
+
+<RegisterPage>:
+    RegisterScreen:
+        app: app
+
+
+<DashboardPage>:
+    DashboardScreen:
+        app: app
+
+
+<LoginScreen>:
+    orientation: "vertical"
+    padding: dp(24), dp(30)
+    spacing: dp(14)
+
+    Widget:
+        size_hint_y: 0.25
+
+    Label:
+        text: "WELCOME TO VAULTX"
+        font_size: "25sp"
+        bold: True
+        size_hint_y: None
+        height: dp(50)
+
+    Label:
+        text: "Login to access your vault"
+        font_size: "15sp"
+        size_hint_y: None
+        height: dp(35)
+
+    TextInput:
+        id: email
+        hint_text: "Email"
+        multiline: False
+        size_hint_y: None
+        height: dp(50)
+
+    TextInput:
+        id: password
+        hint_text: "Password"
+        password: True
+        multiline: False
+        size_hint_y: None
+        height: dp(50)
+
+    Button:
+        text: "LOGIN"
+        size_hint_y: None
+        height: dp(50)
+        on_release: root.login()
+
+    Button:
+        text: "CREATE ACCOUNT"
+        size_hint_y: None
+        height: dp(45)
+        on_release: root.register()
+
+    Label:
+        id: message
+        text: ""
+        size_hint_y: None
+        height: dp(35)
+
+    Widget:
+        size_hint_y: 0.5
+
+
+<RegisterScreen>:
+    orientation: "vertical"
+    padding: dp(24), dp(30)
+    spacing: dp(14)
+
+    Widget:
+        size_hint_y: 0.15
+
+    Label:
+        text: "CREATE ACCOUNT"
+        font_size: "25sp"
+        bold: True
+        size_hint_y: None
+        height: dp(50)
+
+    TextInput:
+        id: name
+        hint_text: "Name"
+        multiline: False
+        size_hint_y: None
+        height: dp(50)
+
+    TextInput:
+        id: email
+        hint_text: "Email"
+        multiline: False
+        size_hint_y: None
+        height: dp(50)
+
+    TextInput:
+        id: password
+        hint_text: "Password"
+        password: True
+        multiline: False
+        size_hint_y: None
+        height: dp(50)
+
+    Button:
+        text: "REGISTER"
+        size_hint_y: None
+        height: dp(50)
+        on_release: root.create_account()
+
+    Button:
+        text: "BACK TO LOGIN"
+        size_hint_y: None
+        height: dp(45)
+        on_release: root.back_to_login()
+
+    Label:
+        id: message
+        text: ""
+        size_hint_y: None
+        height: dp(35)
+
+    Widget:
+        size_hint_y: 0.4
+
+
+<PasswordCard>:
+    orientation: "vertical"
+    size_hint_y: None
+    height: dp(130)
+    padding: dp(12)
+    spacing: dp(6)
+
+    Label:
+        text: root.website
+        font_size: "18sp"
+        bold: True
+        size_hint_y: None
+        height: dp(30)
+        halign: "left"
+
+    Label:
+        text: "Username: " + root.username
+        font_size: "14sp"
+        size_hint_y: None
+        height: dp(25)
+        halign: "left"
+
+    Label:
+        text: root.password_display
+        font_size: "14sp"
+        size_hint_y: None
+        height: dp(25)
+        halign: "left"
+
+    Button:
+        text: root.show_button_text
+        size_hint_y: None
+        height: dp(32)
+        on_release: root.toggle_password()
+
+
+<DashboardScreen>:
+    orientation: "vertical"
+    padding: dp(16)
+    spacing: dp(12)
+
+    BoxLayout:
+        size_hint_y: None
+        height: dp(50)
+        spacing: dp(8)
+
+        Label:
+            text: "VAULTX"
+            font_size: "24sp"
+            bold: True
+
+        Button:
+            text: "LOGOUT"
+            size_hint_x: None
+            width: dp(100)
+            on_release: root.logout()
+
+    TextInput:
+        id: search
+        hint_text: "Search website or username..."
+        multiline: False
+        size_hint_y: None
+        height: dp(45)
+        on_text: root.filter_accounts(self.text)
+
+    Button:
+        text: "+ ADD PASSWORD"
+        size_hint_y: None
+        height: dp(48)
+        on_release: root.add_password()
+
+    ScrollView:
+        do_scroll_x: False
+
+        BoxLayout:
+            id: account_list
+            orientation: "vertical"
+            spacing: dp(10)
+            size_hint_y: None
+            padding: 0, dp(5)
+
+            height: self.minimum_height
