@@ -1,11 +1,23 @@
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 from kivy.app import App
-from kivy.metrics import dp, sp
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from kivy.uix.label import Label
-from kivy.uix.widget import Widget
+from kivy.uix.screenmanager import Screen, ScreenManager
+
+from screens import LoginScreen, RegisterScreen
+
+
+class LoginPage(Screen):
+
+    def __init__(self, app, **kwargs):
+        super().__init__(**kwargs)
+        self.add_widget(LoginScreen(app))
+
+
+class RegisterPage(Screen):
+
+    def __init__(self, app, **kwargs):
+        super().__init__(**kwargs)
+        self.add_widget(RegisterScreen(app))
 
 
 class VaultXApp(App):
@@ -13,64 +25,21 @@ class VaultXApp(App):
     def build(self):
         self.title = "VaultX"
 
-        root = BoxLayout(
-            orientation="vertical",
-            padding=[dp(20), dp(24)],
-            spacing=dp(16),
-        )
+        self.screen_manager = ScreenManager()
 
-        # Spacer atas
-        root.add_widget(Widget(size_hint_y=0.5))
+        self.login_page = LoginPage(self, name="login")
+        self.register_page = RegisterPage(self, name="register")
 
-        title = Label(
-            text="VAULTX",
-            font_size=sp(30),
-            bold=True,
-            size_hint_y=None,
-            height=dp(50),
-            halign="center",
-            valign="middle",
-        )
-        title.bind(size=lambda instance, value: setattr(
-            instance, "text_size", value
-        ))
+        self.screen_manager.add_widget(self.login_page)
+        self.screen_manager.add_widget(self.register_page)
 
-        subtitle = Label(
-            text="Secure your accounts.\nKeep control.",
-            font_size=sp(16),
-            size_hint_y=None,
-            height=dp(60),
-            halign="center",
-            valign="middle",
-        )
-        subtitle.bind(size=lambda instance, value: setattr(
-            instance, "text_size", value
-        ))
+        return self.screen_manager
 
-        root.add_widget(title)
-        root.add_widget(subtitle)
+    def show_login(self):
+        self.screen_manager.current = "login"
 
-        # Area tombol agar tidak memenuhi layar
-        button_container = BoxLayout(
-            orientation="vertical",
-            size_hint=(1, None),
-            height=dp(55),
-            padding=[dp(10), 0],
-        )
-
-        get_started = Button(
-            text="GET STARTED",
-            font_size=sp(16),
-            size_hint=(1, 1),
-        )
-
-        button_container.add_widget(get_started)
-        root.add_widget(button_container)
-
-        # Spacer bawah
-        root.add_widget(Widget(size_hint_y=0.5))
-
-        return root
+    def show_register(self):
+        self.screen_manager.current = "register"
 
 
 if __name__ == "__main__":
