@@ -1,0 +1,5 @@
+kivy[base]
+plyer
+supabase
+python-dotenv
+cryptography

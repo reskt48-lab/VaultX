@@ -1,31 +1,17 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-
-# Virtual environment
 .venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-# IDE
-.vscode/
-.idea/
-
-# Kivy
-.kivy/
-
-# Buildozer
-.buildozer/
-bin/
-
-# Build files
-*.apk
-*.aab
-
-# Environment / secrets
 .env
-.env.*
-!.env.example
 
-# OS
-Thumbs.db
-.DS_Store
+build/
+bin/
+dist/
+
+.gradle/
+.idea/
+.vscode/
+
+*.spec.bak
