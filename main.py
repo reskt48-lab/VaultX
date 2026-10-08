@@ -1,21 +1,14 @@
 import threading
-import urllib.parse
 import webbrowser
+import urllib.parse
 
-from http.server import (
-    BaseHTTPRequestHandler,
-    HTTPServer,
-)
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.uix.screenmanager import ScreenManager
 
-from screens import (
-    LoginScreen,
-    RegisterScreen,
-)
-
+from screens import LoginScreen, RegisterScreen
 from dashboard import DashboardScreen
 
 from supabase_client import supabase
@@ -40,312 +33,198 @@ OAUTH_REDIRECT = (
 )
 
 
-# =========================================================
-# GOOGLE CALLBACK HANDLER
-# =========================================================
+class OAuthCallbackHandler(BaseHTTPRequestHandler):
 
-class OAuthCallbackHandler(
-    BaseHTTPRequestHandler
-):
+    def log_message(self, format, *args):
+        # Jangan tampilkan log HTTP bawaan
+        pass
 
     def do_GET(self):
 
-        parsed = urllib.parse.urlparse(
-            self.path
-        )
-
-        # -------------------------------------------------
-        # CALLBACK CHECK
-        # -------------------------------------------------
-
-        if parsed.path != "/callback":
-
-            self.send_response(404)
-
-            self.send_header(
-                "Content-Type",
-                "text/html; charset=utf-8",
-            )
-
-            self.end_headers()
-
-            self.wfile.write(
-                b"""
-                <h2>VaultX</h2>
-                <p>Callback tidak ditemukan.</p>
-                """
-            )
-
-            return
-
-        query = urllib.parse.parse_qs(
-            parsed.query
-        )
-
-        # -------------------------------------------------
-        # OAUTH ERROR
-        # -------------------------------------------------
-
-        error = query.get(
-            "error",
-            [None]
-        )[0]
-
-        error_description = query.get(
-            "error_description",
-            [None]
-        )[0]
-
-        if error:
-
-            print(
-                "Google OAuth error:",
-                error
-            )
-
-            print(
-                "Description:",
-                error_description
-            )
-
-            self.send_response(400)
-
-            self.send_header(
-                "Content-Type",
-                "text/html; charset=utf-8",
-            )
-
-            self.end_headers()
-
-            html = f"""
-            <!DOCTYPE html>
-
-            <html>
-
-            <head>
-                <meta charset="UTF-8">
-                <title>VaultX</title>
-            </head>
-
-            <body>
-
-                <h2>VaultX</h2>
-
-                <p>
-                    Login Google dibatalkan
-                    atau gagal.
-                </p>
-
-                <p>
-                    {error_description or error}
-                </p>
-
-                <p>
-                    Silakan kembali ke
-                    aplikasi VaultX.
-                </p>
-
-            </body>
-
-            </html>
-            """
-
-            self.wfile.write(
-                html.encode("utf-8")
-            )
-
-            return
-
-        # -------------------------------------------------
-        # AUTH CODE
-        # -------------------------------------------------
-
-        code = query.get(
-            "code",
-            [None]
-        )[0]
-
-        if not code:
-
-            self.send_response(400)
-
-            self.send_header(
-                "Content-Type",
-                "text/html; charset=utf-8",
-            )
-
-            self.end_headers()
-
-            self.wfile.write(
-                b"""
-                <h2>VaultX</h2>
-                <p>
-                    Authorization code
-                    tidak ditemukan.
-                </p>
-                """
-            )
-
-            return
-
-        print(
-            "Google OAuth callback diterima."
-        )
-
-        # -------------------------------------------------
-        # EXCHANGE CODE -> SESSION
-        # -------------------------------------------------
-
         try:
-
-            response = (
-                supabase.auth.exchange_code_for_session(
-                    {
-                        "auth_code": code
-                    }
-                )
+            parsed = urllib.parse.urlparse(
+                self.path
             )
+
+            params = urllib.parse.parse_qs(
+                parsed.query
+            )
+
+            code = params.get(
+                "code",
+                [None]
+            )[0]
+
+            error = params.get(
+                "error",
+                [None]
+            )[0]
+
+            # =================================================
+            # GOOGLE ERROR
+            # =================================================
+
+            if error:
+
+                print(
+                    "Google OAuth error:",
+                    error
+                )
+
+                self.send_response(400)
+
+                self.send_header(
+                    "Content-Type",
+                    "text/html; charset=utf-8"
+                )
+
+                self.end_headers()
+
+                self.wfile.write(
+                    b"""
+                    <html>
+                    <body>
+                        <h2>Google Login gagal.</h2>
+                        <p>Silakan kembali ke VaultX.</p>
+                    </body>
+                    </html>
+                    """
+                )
+
+                return
+
+            # =================================================
+            # CODE TIDAK ADA
+            # =================================================
+
+            if not code:
+
+                print(
+                    "OAuth code tidak ditemukan."
+                )
+
+                self.send_response(400)
+
+                self.send_header(
+                    "Content-Type",
+                    "text/html; charset=utf-8"
+                )
+
+                self.end_headers()
+
+                self.wfile.write(
+                    b"""
+                    <html>
+                    <body>
+                        <h2>OAuth code tidak ditemukan.</h2>
+                        <p>Silakan kembali ke VaultX.</p>
+                    </body>
+                    </html>
+                    """
+                )
+
+                return
 
             print(
-                "Google OAuth code berhasil "
-                "ditukar menjadi session."
+                "OAuth callback diterima."
             )
-
-            # -------------------------------------------------
-            # AMBIL APP
-            # -------------------------------------------------
 
             app = App.get_running_app()
 
-            if app:
+            # =================================================
+            # TUKAR CODE MENJADI SESSION
+            # =================================================
 
-                Clock.schedule_once(
-                    lambda dt: (
-                        app.google_login_success()
-                    ),
-                    0
-                )
+            supabase.auth.exchange_code_for_session({
+                "auth_code": code
+            })
 
-            # -------------------------------------------------
-            # BROWSER RESPONSE
-            # -------------------------------------------------
+            print(
+                "OAuth code berhasil ditukar menjadi session."
+            )
+
+            # =================================================
+            # RESPONSE KE BROWSER
+            # =================================================
 
             self.send_response(200)
 
             self.send_header(
                 "Content-Type",
-                "text/html; charset=utf-8",
-            )
-
-            self.end_headers()
-
-            html = """
-            <!DOCTYPE html>
-
-            <html>
-
-            <head>
-
-                <meta charset="UTF-8">
-
-                <title>
-                    VaultX
-                </title>
-
-                <style>
-
-                    body {
-                        font-family: Arial;
-                        text-align: center;
-                        padding-top: 100px;
-                        background: #111318;
-                        color: white;
-                    }
-
-                    h2 {
-                        color: #4d9cff;
-                    }
-
-                </style>
-
-            </head>
-
-            <body>
-
-                <h2>
-                    VaultX
-                </h2>
-
-                <p>
-                    Google Login berhasil.
-                </p>
-
-                <p>
-                    Kamu bisa kembali ke
-                    aplikasi VaultX.
-                </p>
-
-                <script>
-
-                    setTimeout(
-                        function() {
-                            window.close();
-                        },
-                        1500
-                    );
-
-                </script>
-
-            </body>
-
-            </html>
-            """
-
-            self.wfile.write(
-                html.encode("utf-8")
-            )
-
-        except Exception as error:
-
-            print(
-                "OAuth exchange error:",
-                repr(error)
-            )
-
-            self.send_response(500)
-
-            self.send_header(
-                "Content-Type",
-                "text/html; charset=utf-8",
+                "text/html; charset=utf-8"
             )
 
             self.end_headers()
 
             self.wfile.write(
                 b"""
-                <h2>VaultX</h2>
-                <p>Google Login gagal.</p>
-                <p>
-                    Silakan kembali ke
-                    aplikasi VaultX.
-                </p>
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>VaultX</title>
+                </head>
+
+                <body>
+                    <h2>Google Login berhasil.</h2>
+                    <p>Silakan kembali ke aplikasi VaultX.</p>
+
+                    <script>
+                        setTimeout(function() {
+                            window.close();
+                        }, 1000);
+                    </script>
+                </body>
+                </html>
                 """
             )
 
-    def log_message(
-        self,
-        format,
-        *args
-    ):
+            # =================================================
+            # KEMBALI KE THREAD UTAMA KIVY
+            # =================================================
 
-        # Jangan tampilkan log HTTP
-        # terlalu banyak di terminal.
+            Clock.schedule_once(
+                lambda dt: app.google_login_success(),
+                0
+            )
 
-        return
+        except Exception as e:
+
+            print(
+                "OAuth callback error:",
+                repr(e)
+            )
+
+            try:
+
+                self.send_response(500)
+
+                self.send_header(
+                    "Content-Type",
+                    "text/html; charset=utf-8"
+                )
+
+                self.end_headers()
+
+                self.wfile.write(
+                    b"""
+                    <!DOCTYPE html>
+                    <html>
+                    <body>
+                        <h2>Google Login gagal.</h2>
+                        <p>Terjadi kesalahan saat memproses login.</p>
+                        <p>Silakan kembali ke VaultX.</p>
+                    </body>
+                    </html>
+                    """
+                )
+
+            except Exception:
+                pass
 
 
 # =========================================================
-# START OAUTH SERVER
+# OAUTH SERVER
 # =========================================================
 
 def start_oauth_server():
@@ -355,91 +234,54 @@ def start_oauth_server():
         server = HTTPServer(
             (
                 OAUTH_HOST,
-                OAUTH_PORT,
+                OAUTH_PORT
             ),
-            OAuthCallbackHandler,
+            OAuthCallbackHandler
         )
 
         print(
-            "=" * 55
-        )
-
-        print(
-            "VaultX Google OAuth "
-            "callback server aktif"
-        )
-
-        print(
-            f"Callback: {OAUTH_REDIRECT}"
-        )
-
-        print(
-            "=" * 55
+            "OAuth server berjalan di:",
+            OAUTH_REDIRECT
         )
 
         server.serve_forever()
 
-    except OSError as error:
+    except OSError as e:
 
         print(
-            "OAuth callback server "
-            "gagal dijalankan:"
+            "OAuth server gagal dijalankan:",
+            repr(e)
         )
 
-        print(
-            repr(error)
-        )
+    except Exception as e:
 
         print(
-            f"Pastikan port {OAUTH_PORT} "
-            "tidak sedang digunakan."
+            "OAuth server error:",
+            repr(e)
         )
 
 
 # =========================================================
-# MAIN APP
+# VAULTX APP
 # =========================================================
 
 class VaultXApp(App):
 
     title = "VaultX"
 
-    # -----------------------------------------------------
-    # ENCRYPTION KEY
-    # -----------------------------------------------------
-
     crypto_key = None
 
-    # -----------------------------------------------------
-    # USER INFO
-    # -----------------------------------------------------
-
     current_user_id = ""
-
     current_user_email = ""
-
     last_vaultx_email = ""
+
+    oauth_server_started = False
 
     # =====================================================
     # BUILD
     # =====================================================
 
     def build(self):
-
-        # -------------------------------------------------
-        # START GOOGLE CALLBACK SERVER
-        # -------------------------------------------------
-
-        oauth_thread = threading.Thread(
-            target=start_oauth_server,
-            daemon=True,
-        )
-
-        oauth_thread.start()
-
-        # -------------------------------------------------
-        # SCREEN MANAGER
-        # -------------------------------------------------
 
         manager = ScreenManager()
 
@@ -477,33 +319,221 @@ class VaultXApp(App):
         # ADD SCREEN
         # -------------------------------------------------
 
-        manager.add_widget(
-            login
-        )
+        manager.add_widget(login)
+        manager.add_widget(register)
+        manager.add_widget(dashboard)
 
-        manager.add_widget(
-            register
-        )
+        # =================================================
+        # START OAUTH SERVER
+        # =================================================
 
-        manager.add_widget(
-            dashboard
-        )
+        if not self.oauth_server_started:
 
-        # -------------------------------------------------
-        # COBA PULIHKAN SESSION
-        # -------------------------------------------------
+            self.oauth_server_started = True
+
+            threading.Thread(
+                target=start_oauth_server,
+                daemon=True
+            ).start()
+
+        # =================================================
+        # RESTORE SESSION
+        # =================================================
 
         Clock.schedule_once(
-            lambda dt: (
-                self.restore_session()
-            ),
+            lambda dt: self.restore_session(),
             0.2
         )
 
         return manager
 
     # =====================================================
-    # PREPARE CRYPTO KEY
+    # GOOGLE LOGIN
+    # =====================================================
+
+    def start_google_login(self):
+
+        try:
+
+            print(
+                "Memulai Google OAuth..."
+            )
+
+            response = supabase.auth.sign_in_with_oauth({
+                "provider": "google",
+                "options": {
+                    "redirect_to": OAUTH_REDIRECT
+                }
+            })
+
+            oauth_url = None
+
+            # Supabase-py response
+            if hasattr(
+                response,
+                "url"
+            ):
+
+                oauth_url = response.url
+
+            # Jika response berupa dictionary
+            elif isinstance(
+                response,
+                dict
+            ):
+
+                oauth_url = response.get(
+                    "url"
+                )
+
+            if not oauth_url:
+
+                raise RuntimeError(
+                    "URL Google OAuth tidak ditemukan."
+                )
+
+            print(
+                "Membuka Google OAuth..."
+            )
+
+            print(
+                "OAuth URL:",
+                oauth_url
+            )
+
+            webbrowser.open(
+                oauth_url
+            )
+
+        except Exception as e:
+
+            print(
+                "Start Google Login error:",
+                repr(e)
+            )
+
+            try:
+
+                login = self.root.get_screen(
+                    "login"
+                )
+
+                login.ids.login_status.text = (
+                    "Google Login gagal dibuka."
+                )
+
+            except Exception:
+                pass
+
+    # =====================================================
+    # GOOGLE LOGIN SUCCESS
+    # =====================================================
+
+    def google_login_success(self):
+
+        try:
+
+            print(
+                "Memproses session Google..."
+            )
+
+            session = supabase.auth.get_session()
+
+            if not session:
+
+                raise RuntimeError(
+                    "Session Google tidak ditemukan."
+                )
+
+            if not session.user:
+
+                raise RuntimeError(
+                    "User Google tidak ditemukan."
+                )
+
+            # =================================================
+            # USER ID
+            # =================================================
+
+            user_id = str(
+                session.user.id
+            )
+
+            # =================================================
+            # EMAIL
+            # =================================================
+
+            user_email = (
+                getattr(
+                    session.user,
+                    "email",
+                    ""
+                )
+                or ""
+            )
+
+            self.current_user_id = user_id
+
+            self.current_user_email = user_email
+
+            self.last_vaultx_email = user_email
+
+            # =================================================
+            # CRYPTO KEY
+            # =================================================
+
+            self.prepare_crypto_key(
+                user_id
+            )
+
+            # =================================================
+            # SAVE SESSION
+            # =================================================
+
+            self.save_current_session()
+
+            # =================================================
+            # LOAD DASHBOARD
+            # =================================================
+
+            dashboard = self.root.get_screen(
+                "dashboard"
+            )
+
+            dashboard.load_accounts()
+
+            # =================================================
+            # PINDAH KE DASHBOARD
+            # =================================================
+
+            self.root.current = "dashboard"
+
+            print(
+                "Google Login VaultX berhasil."
+            )
+
+        except Exception as e:
+
+            print(
+                "Google login success error:",
+                repr(e)
+            )
+
+            try:
+
+                login = self.root.get_screen(
+                    "login"
+                )
+
+                login.ids.login_status.text = (
+                    "Google Login gagal diproses."
+                )
+
+            except Exception:
+                pass
+
+    # =====================================================
+    # CRYPTO KEY
     # =====================================================
 
     def prepare_crypto_key(
@@ -521,19 +551,10 @@ class VaultXApp(App):
                 "User ID kosong."
             )
 
-        # Simpan user ID aktif.
+        self.current_user_id = user_id
 
-        self.current_user_id = (
+        self.crypto_key = get_or_create_vault_key(
             user_id
-        )
-
-        # Ambil / buat Vault Key
-        # khusus user tersebut.
-
-        self.crypto_key = (
-            get_or_create_vault_key(
-                user_id
-            )
         )
 
         print(
@@ -541,22 +562,19 @@ class VaultXApp(App):
         )
 
     # =====================================================
-    # SAVE CURRENT SESSION
+    # SAVE SESSION
     # =====================================================
 
     def save_current_session(self):
 
         try:
 
-            session = (
-                supabase.auth.get_session()
-            )
+            session = supabase.auth.get_session()
 
             if not session:
 
                 print(
-                    "Tidak ada session "
-                    "untuk disimpan."
+                    "Tidak ada session untuk disimpan."
                 )
 
                 return False
@@ -617,33 +635,26 @@ class VaultXApp(App):
             if not stored:
 
                 print(
-                    "Tidak ada session "
-                    "VaultX tersimpan."
+                    "Tidak ada session VaultX tersimpan."
                 )
 
                 return
 
             print(
-                "Mencoba memulihkan "
-                "session VaultX..."
+                "Mencoba memulihkan session VaultX..."
             )
 
-            response = (
-                supabase.auth.set_session(
-                    stored["access_token"],
-                    stored["refresh_token"],
-                )
+            supabase.auth.set_session(
+                stored["access_token"],
+                stored["refresh_token"]
             )
 
-            # -------------------------------------------------
-            # AMBIL USER
-            # -------------------------------------------------
+            session = supabase.auth.get_session()
 
-            session = (
-                supabase.auth.get_session()
-            )
-
-            if not session or not session.user:
+            if (
+                not session
+                or not session.user
+            ):
 
                 raise RuntimeError(
                     "Session berhasil dipulihkan "
@@ -663,43 +674,26 @@ class VaultXApp(App):
                 or ""
             )
 
-            self.current_user_email = (
-                user_email
-            )
+            self.current_user_email = user_email
 
-            # -------------------------------------------------
-            # SIAPKAN CRYPTO KEY
-            # -------------------------------------------------
+            self.last_vaultx_email = user_email
 
             self.prepare_crypto_key(
                 user_id
             )
 
-            # -------------------------------------------------
-            # SIMPAN TOKEN BARU
-            # -------------------------------------------------
-
             self.save_current_session()
 
-            # -------------------------------------------------
-            # DASHBOARD
-            # -------------------------------------------------
-
-            dashboard = (
-                self.root.get_screen(
-                    "dashboard"
-                )
+            dashboard = self.root.get_screen(
+                "dashboard"
             )
 
             dashboard.load_accounts()
 
-            self.root.current = (
-                "dashboard"
-            )
+            self.root.current = "dashboard"
 
             print(
-                "Session VaultX berhasil "
-                "dipulihkan."
+                "Session VaultX berhasil dipulihkan."
             )
 
         except Exception as error:
@@ -709,8 +703,6 @@ class VaultXApp(App):
                 repr(error)
             )
 
-            # Session lokal sudah tidak valid.
-
             clear_session()
 
             self.crypto_key = None
@@ -718,93 +710,6 @@ class VaultXApp(App):
             self.current_user_id = ""
 
             self.current_user_email = ""
-
-    # =====================================================
-    # GOOGLE LOGIN SUCCESS
-    # =====================================================
-
-    def google_login_success(self):
-
-        print(
-            "VaultX menerima Google session."
-        )
-
-        try:
-
-            session = (
-                supabase.auth.get_session()
-            )
-
-            if not session or not session.user:
-
-                raise RuntimeError(
-                    "Google session tidak ditemukan."
-                )
-
-            user_id = str(
-                session.user.id
-            )
-
-            user_email = (
-                getattr(
-                    session.user,
-                    "email",
-                    ""
-                )
-                or ""
-            )
-
-            self.current_user_email = (
-                user_email
-            )
-
-            # -------------------------------------------------
-            # SIAPKAN VAULT KEY GOOGLE
-            # -------------------------------------------------
-
-            self.prepare_crypto_key(
-                user_id
-            )
-
-            # -------------------------------------------------
-            # SIMPAN SESSION
-            # -------------------------------------------------
-
-            self.save_current_session()
-
-            # -------------------------------------------------
-            # DASHBOARD
-            # -------------------------------------------------
-
-            dashboard = (
-                self.root.get_screen(
-                    "dashboard"
-                )
-            )
-
-            dashboard.load_accounts()
-
-            self.root.current = (
-                "dashboard"
-            )
-
-            print(
-                "VaultX berhasil masuk "
-                "ke Dashboard."
-            )
-
-        except Exception as error:
-
-            print(
-                "Gagal membuka Dashboard "
-                "setelah Google Login:"
-            )
-
-            print(
-                repr(error)
-            )
-
-            self.crypto_key = None
 
     # =====================================================
     # LOGOUT
@@ -827,16 +732,10 @@ class VaultXApp(App):
                 repr(error)
             )
 
-        # -------------------------------------------------
-        # HAPUS SESSION LOKAL
-        # -------------------------------------------------
+        # Hanya hapus session login
+        # Data vault tetap ada
 
         clear_session()
-
-        # -------------------------------------------------
-        # JANGAN HAPUS VAULT KEY
-        # JANGAN HAPUS DATA
-        # -------------------------------------------------
 
         self.crypto_key = None
 
@@ -844,20 +743,12 @@ class VaultXApp(App):
 
         self.current_user_email = ""
 
-        # -------------------------------------------------
-        # KEMBALI KE LOGIN
-        # -------------------------------------------------
-
-        self.root.current = (
-            "login"
-        )
+        self.root.current = "login"
 
         try:
 
-            login = (
-                self.root.get_screen(
-                    "login"
-                )
+            login = self.root.get_screen(
+                "login"
             )
 
             if "login_password" in login.ids:
@@ -885,5 +776,4 @@ class VaultXApp(App):
 # =========================================================
 
 if __name__ == "__main__":
-
     VaultXApp().run()

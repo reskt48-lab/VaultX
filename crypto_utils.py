@@ -4,32 +4,44 @@ import json
 import secrets
 from pathlib import Path
 
+try:
+    from kivy.app import App
+except ImportError:
+    App = None
+
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 
 
-# =========================================================
-# VAULTX LOCAL DIRECTORY
-# =========================================================
+def get_app_dir():
+    try:
+        if App is not None:
+            app = App.get_running_app()
 
-APP_DIR = Path.home() / ".vaultx"
-KEY_FILE = APP_DIR / "vault_keys.json"
-SESSION_FILE = APP_DIR / "session.json"
+            if app:
+                path = Path(app.user_data_dir) / ".vaultx"
+            else:
+                path = Path.home() / ".vaultx"
+        else:
+            path = Path.home() / ".vaultx"
 
-APP_DIR.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        path = Path.home() / ".vaultx"
+
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
-# =========================================================
-# PASSWORD -> KEY
-# Dipertahankan untuk kompatibilitas dengan kode lama.
-# =========================================================
+def get_key_file():
+    return get_app_dir() / "vault_keys.json"
+
+
+def get_session_file():
+    return get_app_dir() / "session.json"
+
 
 def derive_key(password: str, salt: bytes) -> bytes:
-    """
-    Menghasilkan Fernet key dari password + salt.
-    """
-
     if not isinstance(password, str):
         password = str(password)
 
@@ -48,64 +60,31 @@ def derive_key(password: str, salt: bytes) -> bytes:
     )
 
 
-# =========================================================
-# ENCRYPT / DECRYPT
-# =========================================================
-
 def encrypt_text(text: str, key: bytes) -> str:
-    """
-    Mengenkripsi text menggunakan Fernet.
-    """
-
     if not text:
         return ""
 
     if not key:
         raise ValueError("Encryption key belum tersedia.")
 
-    cipher = Fernet(key)
-
-    encrypted = cipher.encrypt(
+    return Fernet(key).encrypt(
         text.encode("utf-8")
-    )
-
-    return encrypted.decode("utf-8")
+    ).decode("utf-8")
 
 
 def decrypt_text(text: str, key: bytes) -> str:
-    """
-    Mendekripsi text menggunakan Fernet.
-    """
-
     if not text:
         return ""
 
     if not key:
         raise ValueError("Encryption key belum tersedia.")
 
-    cipher = Fernet(key)
-
-    decrypted = cipher.decrypt(
+    return Fernet(key).decrypt(
         text.encode("utf-8")
-    )
+    ).decode("utf-8")
 
-    return decrypted.decode("utf-8")
-
-
-# =========================================================
-# SALT
-# =========================================================
 
 def create_salt(user_id: str = "") -> bytes:
-    """
-    Membuat salt.
-
-    Jika user_id diberikan, salt dibuat stabil berdasarkan
-    user_id sehingga bisa digunakan kembali.
-
-    Fungsi ini dipertahankan agar kode lama tetap kompatibel.
-    """
-
     if user_id:
         return hashlib.sha256(
             f"VaultX-SALT-v1:{user_id}".encode("utf-8")
@@ -114,99 +93,57 @@ def create_salt(user_id: str = "") -> bytes:
     return secrets.token_bytes(32)
 
 
-# =========================================================
-# RANDOM VAULT KEY
-# =========================================================
-
 def generate_vault_key() -> bytes:
-    """
-    Membuat encryption key baru untuk vault.
-    """
-
     return Fernet.generate_key()
 
 
-# =========================================================
-# LOAD LOCAL VAULT KEYS
-# =========================================================
-
 def _load_vault_keys() -> dict:
-    """
-    Membaca daftar Vault Key lokal.
-    """
+    key_file = get_key_file()
 
-    if not KEY_FILE.exists():
+    if not key_file.exists():
         return {}
 
     try:
-        with open(KEY_FILE, "r", encoding="utf-8") as file:
+        with open(key_file, "r", encoding="utf-8") as file:
             data = json.load(file)
 
-        if not isinstance(data, dict):
-            return {}
-
-        return data
+        return data if isinstance(data, dict) else {}
 
     except Exception as error:
         print("Vault key file error:", repr(error))
         return {}
 
 
-# =========================================================
-# SAVE LOCAL VAULT KEYS
-# =========================================================
-
 def _save_vault_keys(data: dict):
-    """
-    Menyimpan Vault Key lokal.
-    """
+    key_file = get_key_file()
 
-    APP_DIR.mkdir(
+    key_file.parent.mkdir(
         parents=True,
         exist_ok=True
     )
 
-    temporary_file = KEY_FILE.with_suffix(".tmp")
+    temporary_file = key_file.with_suffix(".tmp")
 
     with open(
         temporary_file,
         "w",
         encoding="utf-8"
     ) as file:
-
         json.dump(
             data,
             file,
             indent=2
         )
 
-    temporary_file.replace(KEY_FILE)
+    temporary_file.replace(key_file)
 
-    # Linux/macOS:
-    # mencoba membatasi permission file.
     try:
-        KEY_FILE.chmod(0o600)
+        key_file.chmod(0o600)
     except Exception:
         pass
 
 
-# =========================================================
-# GET / CREATE VAULT KEY
-# =========================================================
-
 def get_or_create_vault_key(user_id: str) -> bytes:
-    """
-    Mengambil Vault Key berdasarkan user_id.
-
-    Kalau belum ada:
-        buat key baru
-        simpan lokal
-        kembalikan key
-
-    Kalau sudah ada:
-        ambil key lama
-    """
-
     if not user_id:
         raise ValueError(
             "user_id diperlukan untuk membuat Vault Key."
@@ -223,18 +160,10 @@ def get_or_create_vault_key(user_id: str) -> bytes:
 
     stored_key = data.get(user_id)
 
-    # -----------------------------------------------------
-    # KEY SUDAH ADA
-    # -----------------------------------------------------
-
     if stored_key:
-
         try:
             key = stored_key.encode("utf-8")
-
-            # Validasi apakah key benar-benar Fernet key.
             Fernet(key)
-
             return key
 
         except Exception:
@@ -243,101 +172,65 @@ def get_or_create_vault_key(user_id: str) -> bytes:
                 "Membuat key baru."
             )
 
-    # -----------------------------------------------------
-    # BUAT KEY BARU
-    # -----------------------------------------------------
-
     key = generate_vault_key()
 
     data[user_id] = key.decode("utf-8")
 
     _save_vault_keys(data)
 
-    print(
-        "Vault Key dibuat untuk user:",
-        user_id
-    )
-
     return key
 
-
-# =========================================================
-# SESSION STORAGE
-# =========================================================
 
 def save_session(
     access_token: str,
     refresh_token: str
 ):
-    """
-    Menyimpan session Supabase secara lokal.
-
-    Digunakan supaya aplikasi dapat mencoba memulihkan
-    login ketika dibuka kembali.
-    """
-
     if not access_token or not refresh_token:
         return
+
+    session_file = get_session_file()
 
     data = {
         "access_token": access_token,
         "refresh_token": refresh_token,
     }
 
-    temporary_file = SESSION_FILE.with_suffix(".tmp")
+    temporary_file = session_file.with_suffix(".tmp")
 
     with open(
         temporary_file,
         "w",
         encoding="utf-8"
     ) as file:
+        json.dump(data, file)
 
-        json.dump(
-            data,
-            file
-        )
-
-    temporary_file.replace(
-        SESSION_FILE
-    )
+    temporary_file.replace(session_file)
 
     try:
-        SESSION_FILE.chmod(0o600)
+        session_file.chmod(0o600)
     except Exception:
         pass
 
 
-# =========================================================
-# LOAD SESSION
-# =========================================================
-
 def load_session() -> dict | None:
-    """
-    Mengambil session lokal.
-    """
+    session_file = get_session_file()
 
-    if not SESSION_FILE.exists():
+    if not session_file.exists():
         return None
 
     try:
         with open(
-            SESSION_FILE,
+            session_file,
             "r",
             encoding="utf-8"
         ) as file:
-
             data = json.load(file)
 
         if not isinstance(data, dict):
             return None
 
-        access_token = data.get(
-            "access_token"
-        )
-
-        refresh_token = data.get(
-            "refresh_token"
-        )
+        access_token = data.get("access_token")
+        refresh_token = data.get("refresh_token")
 
         if not access_token or not refresh_token:
             return None
@@ -356,24 +249,12 @@ def load_session() -> dict | None:
         return None
 
 
-# =========================================================
-# CLEAR SESSION
-# =========================================================
-
 def clear_session():
-    """
-    Menghapus session lokal.
-
-    Tidak menghapus:
-    - Vault Key
-    - password database
-    - akun Supabase
-    """
+    session_file = get_session_file()
 
     try:
-        if SESSION_FILE.exists():
-            SESSION_FILE.unlink()
-
+        if session_file.exists():
+            session_file.unlink()
     except Exception as error:
         print(
             "Clear session error:",

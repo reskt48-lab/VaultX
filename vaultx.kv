@@ -4,10 +4,13 @@
 
 ScreenManager:
     transition: NoTransition()
+
     LoginScreen:
         name: "login"
+
     RegisterScreen:
         name: "register"
+
     DashboardScreen:
         name: "dashboard"
 
@@ -27,107 +30,176 @@ ScreenManager:
 
     BoxLayout:
         orientation: "vertical"
-        padding: dp(30)
-        spacing: dp(15)
+
+        padding: dp(20), dp(20)
+        spacing: dp(12)
 
         Widget:
             size_hint_y: 0.18
 
         Label:
             text: "VaultX"
-            font_size: sp(34)
+            font_size: sp(32)
             bold: True
+
             size_hint_y: None
-            height: dp(55)
+            height: dp(50)
+
+            text_size: self.size
+            halign: "center"
+            valign: "middle"
 
         Label:
             text: "Secure Password Manager"
-            font_size: sp(15)
+            font_size: sp(14)
             color: 0.65, 0.68, 0.75, 1
+
             size_hint_y: None
-            height: dp(30)
+            height: dp(28)
+
+            text_size: self.size
+            halign: "center"
+            valign: "middle"
 
         Widget:
-            size_hint_y: 0.05
+            size_hint_y: 0.04
 
         TextInput:
             id: login_email
+
             hint_text: "Email"
             text: root.saved_email
+
             multiline: False
+
             size_hint_y: None
-            height: dp(50)
-            padding: dp(15), dp(14)
+            height: dp(48)
+
+            padding: dp(14), dp(12)
+
             background_normal: ""
             background_color: 0.11, 0.12, 0.16, 1
+
             foreground_color: 1, 1, 1, 1
             cursor_color: 1, 1, 1, 1
 
         BoxLayout:
             size_hint_y: None
-            height: dp(50)
+            height: dp(48)
             spacing: dp(5)
 
             TextInput:
                 id: login_password
+
                 hint_text: "Password"
+
                 password: not root.password_visible
                 multiline: False
-                padding: dp(15), dp(14)
+
+                padding: dp(14), dp(12)
+
                 background_normal: ""
                 background_color: 0.11, 0.12, 0.16, 1
+
                 foreground_color: 1, 1, 1, 1
                 cursor_color: 1, 1, 1, 1
 
             Button:
                 text: "SHOW" if not root.password_visible else "HIDE"
+
                 size_hint_x: None
-                width: dp(75)
+                width: dp(72)
+
                 background_normal: ""
                 background_color: 0.18, 0.20, 0.26, 1
+
                 on_release:
                     root.toggle_password_visibility()
 
         Button:
             text: "LOGIN"
+
             size_hint_y: None
-            height: dp(50)
+            height: dp(48)
+
             background_normal: ""
             background_color: 0.18, 0.42, 0.85, 1
+
             on_release:
                 root.login_vaultx(login_password.text)
 
+        # =================================================
+        # PEMISAH
+        # =================================================
+
+        BoxLayout:
+            size_hint_y: None
+            height: dp(28)
+            spacing: dp(8)
+
+            Widget:
+
+            Label:
+                text: "OR"
+                font_size: sp(11)
+                color: 0.50, 0.53, 0.60, 1
+
+                size_hint_x: None
+                width: dp(30)
+
+                text_size: self.size
+                halign: "center"
+                valign: "middle"
+
+            Widget:
+
+        # =================================================
+        # GOOGLE LOGIN
+        # =================================================
+
         Button:
             text: "CONTINUE WITH GOOGLE"
+
             size_hint_y: None
-            height: dp(50)
+            height: dp(44)
+
             background_normal: ""
-            background_color: 0.15, 0.16, 0.20, 1
+            background_color: 0.10, 0.11, 0.14, 1
+
+            color: 1, 1, 1, 1
+
             on_release:
                 root.login_google()
 
         Button:
             text: "CREATE VAULTX ACCOUNT"
+
             size_hint_y: None
-            height: dp(45)
+            height: dp(44)
+
             background_normal: ""
             background_color: 0.10, 0.11, 0.14, 1
+
             on_release:
                 root.create_account()
 
         Label:
             id: login_status
+
             text: ""
+
             color: 1, 0.35, 0.35, 1
+
             text_size: self.width, None
+
             halign: "center"
             valign: "middle"
+
             size_hint_y: None
             height: dp(40)
 
         Widget:
-            size_hint_y: 0.2
-
+            size_hint_y: 0.20
 
 # =========================================================
 # REGISTER
@@ -142,108 +214,157 @@ ScreenManager:
             pos: self.pos
             size: self.size
 
-    BoxLayout:
-        orientation: "vertical"
-        padding: dp(30)
-        spacing: dp(15)
-
-        Widget:
-            size_hint_y: 0.15
-
-        Label:
-            text: "Create VaultX Account"
-            font_size: sp(27)
-            bold: True
-            size_hint_y: None
-            height: dp(55)
-
-        TextInput:
-            id: register_email
-            hint_text: "Email"
-            multiline: False
-            size_hint_y: None
-            height: dp(50)
-            padding: dp(15), dp(14)
-            background_normal: ""
-            background_color: 0.11, 0.12, 0.16, 1
-            foreground_color: 1, 1, 1, 1
+    ScrollView:
+        do_scroll_x: False
+        do_scroll_y: True
 
         BoxLayout:
+            orientation: "vertical"
+
             size_hint_y: None
-            height: dp(50)
-            spacing: dp(5)
+            height: self.minimum_height
+
+            padding: dp(20), dp(25)
+            spacing: dp(12)
+
+            Widget:
+                size_hint_y: None
+                height: dp(35)
+
+            Label:
+                text: "Create VaultX Account"
+
+                font_size: sp(25)
+                bold: True
+
+                size_hint_y: None
+                height: dp(50)
+
+                text_size: self.size
+                halign: "center"
+                valign: "middle"
 
             TextInput:
-                id: register_password
-                hint_text: "Password"
-                password: not root.register_password_visible
+                id: register_email
+
+                hint_text: "Email"
                 multiline: False
-                padding: dp(15), dp(14)
+
+                size_hint_y: None
+                height: dp(48)
+
+                padding: dp(14), dp(12)
+
                 background_normal: ""
                 background_color: 0.11, 0.12, 0.16, 1
+
                 foreground_color: 1, 1, 1, 1
 
-            Button:
-                text: "SHOW" if not root.register_password_visible else "HIDE"
-                size_hint_x: None
-                width: dp(75)
-                background_normal: ""
-                background_color: 0.18, 0.20, 0.26, 1
-                on_release:
-                    root.toggle_register_password()
+            BoxLayout:
+                size_hint_y: None
+                height: dp(48)
+                spacing: dp(5)
 
-        BoxLayout:
-            size_hint_y: None
-            height: dp(50)
-            spacing: dp(5)
+                TextInput:
+                    id: register_password
 
-            TextInput:
-                id: register_confirm
-                hint_text: "Confirm Password"
-                password: not root.register_confirm_visible
-                multiline: False
-                padding: dp(15), dp(14)
-                background_normal: ""
-                background_color: 0.11, 0.12, 0.16, 1
-                foreground_color: 1, 1, 1, 1
+                    hint_text: "Password"
 
-            Button:
-                text: "SHOW" if not root.register_confirm_visible else "HIDE"
-                size_hint_x: None
-                width: dp(75)
-                background_normal: ""
-                background_color: 0.18, 0.20, 0.26, 1
-                on_release:
-                    root.toggle_register_confirm()
+                    password: not root.register_password_visible
+                    multiline: False
+
+                    padding: dp(14), dp(12)
+
+                    background_normal: ""
+                    background_color: 0.11, 0.12, 0.16, 1
+
+                    foreground_color: 1, 1, 1, 1
+
+                Button:
+                    text: "SHOW" if not root.register_password_visible else "HIDE"
+
+                    size_hint_x: None
+                    width: dp(72)
+
+                    background_normal: ""
+                    background_color: 0.18, 0.20, 0.26, 1
+
+                    on_release:
+                        root.toggle_register_password()
+
+            BoxLayout:
+                size_hint_y: None
+                height: dp(48)
+                spacing: dp(5)
+
+                TextInput:
+                    id: register_confirm
+
+                    hint_text: "Confirm Password"
+
+                    password: not root.register_confirm_visible
+                    multiline: False
+
+                    padding: dp(14), dp(12)
+
+                    background_normal: ""
+                    background_color: 0.11, 0.12, 0.16, 1
+
+                    foreground_color: 1, 1, 1, 1
+
+                Button:
+                    text: "SHOW" if not root.register_confirm_visible else "HIDE"
+
+                    size_hint_x: None
+                    width: dp(72)
+
+                    background_normal: ""
+                    background_color: 0.18, 0.20, 0.26, 1
+
+                    on_release:
+                        root.toggle_register_confirm()
 
             Button:
                 text: "CREATE ACCOUNT"
+
                 size_hint_y: None
-                height: dp(50)
+                height: dp(48)
+
                 background_normal: ""
                 background_color: 0.18, 0.42, 0.85, 1
+
                 on_release: root.register_vaultx(register_email.text, register_password.text, register_confirm.text)
 
-        Button:
-            text: "BACK TO LOGIN"
-            size_hint_y: None
-            height: dp(45)
-            background_normal: ""
-            background_color: 0.10, 0.11, 0.14, 1
-            on_release:
-                root.back_to_login()
+            Button:
+                text: "BACK TO LOGIN"
 
-        Label:
-            id: register_status
-            text: ""
-            color: 1, 0.35, 0.35, 1
-            text_size: self.width, None
-            halign: "center"
-            valign: "middle"
-            size_hint_y: None
-            height: dp(45)
+                size_hint_y: None
+                height: dp(44)
 
-        Widget:
+                background_normal: ""
+                background_color: 0.10, 0.11, 0.14, 1
+
+                on_release:
+                    root.back_to_login()
+
+            Label:
+                id: register_status
+
+                text: ""
+
+                color: 1, 0.35, 0.35, 1
+
+                text_size: self.width, None
+
+                halign: "center"
+                valign: "middle"
+
+                size_hint_y: None
+                height: dp(55)
+
+            Widget:
+                size_hint_y: None
+                height: dp(30)
 
 
 # =========================================================
@@ -255,72 +376,94 @@ ScreenManager:
     canvas.before:
         Color:
             rgba: 0.045, 0.05, 0.07, 1
+
         Rectangle:
             pos: self.pos
             size: self.size
 
     BoxLayout:
         orientation: "vertical"
-        padding: dp(15)
-        spacing: dp(10)
 
+        padding: dp(12), dp(12)
+        spacing: dp(8)
+
+        # Header
         BoxLayout:
             size_hint_y: None
-            height: dp(55)
-            spacing: dp(10)
+            height: dp(50)
+
+            spacing: dp(8)
 
             Label:
                 text: "VaultX"
-                font_size: sp(25)
+
+                font_size: sp(24)
                 bold: True
+
                 halign: "left"
                 valign: "middle"
+
                 text_size: self.size
 
             Button:
                 text: "LOGOUT"
+
                 size_hint_x: None
-                width: dp(85)
+                width: dp(82)
+
                 background_normal: ""
                 background_color: 0.17, 0.18, 0.22, 1
+
                 on_release:
                     root.logout()
 
+        # Search
         TextInput:
             id: search_input
+
             hint_text: "Search website or username..."
+
             multiline: False
+
             size_hint_y: None
-            height: dp(48)
-            padding: dp(15), dp(13)
+            height: dp(46)
+
+            padding: dp(14), dp(12)
+
             background_normal: ""
             background_color: 0.10, 0.11, 0.15, 1
+
             foreground_color: 1, 1, 1, 1
+
             on_text:
                 root.search_accounts(self.text)
 
-        BoxLayout:
+        # Add button
+        Button:
+            text: "+ ADD PASSWORD"
+
             size_hint_y: None
-            height: dp(48)
-            spacing: dp(8)
+            height: dp(46)
 
-            Button:
-                text: "+ ADD PASSWORD"
-                background_normal: ""
-                background_color: 0.18, 0.42, 0.85, 1
-                on_release:
-                    root.add_password()
+            background_normal: ""
+            background_color: 0.18, 0.42, 0.85, 1
 
+            on_release:
+                root.add_password()
+
+        # Password list
         ScrollView:
-
             do_scroll_x: False
             do_scroll_y: True
 
             GridLayout:
                 id: account_list
+
                 cols: 1
-                spacing: dp(10)
-                padding: 0, dp(5)
+
+                spacing: dp(8)
+                padding: 0, dp(4)
+
                 size_hint_y: None
                 height: self.minimum_height
 
@@ -332,81 +475,135 @@ ScreenManager:
 <PasswordCard>:
 
     size_hint_y: None
-    height: dp(110)
 
-    padding: dp(8)
-    spacing: dp(10)
+    # Responsive card height
+    height: dp(105)
+
+    padding: dp(7)
+    spacing: dp(7)
 
     canvas.before:
         Color:
             rgba: 0.10, 0.11, 0.15, 1
+
         RoundedRectangle:
             pos: self.pos
             size: self.size
+
             radius: [dp(10)]
 
+    # Photo
     BoxLayout:
 
         size_hint_x: None
-        width: dp(78)
+
+        # Smaller than before so text gets more room
+        width: dp(68)
 
         AsyncImage:
             source: root.image_source
+
             fit_mode: "cover"
+
             opacity: 1 if root.image_source else 0
 
+    # Account information
     BoxLayout:
+
         orientation: "vertical"
-        spacing: dp(2)
+
+        spacing: dp(1)
+
+        # Prevent text from becoming too large
+        size_hint_x: 1
 
         Label:
             text: root.website
+
             bold: True
-            font_size: sp(16)
+
+            font_size: sp(15)
+
             color: 1, 1, 1, 1
+
             halign: "left"
             valign: "middle"
+
             text_size: self.size
+
+            shorten: True
+            shorten_from: "right"
 
         Label:
             text: root.username
-            font_size: sp(13)
+
+            font_size: sp(12)
+
             color: 0.65, 0.68, 0.75, 1
+
             halign: "left"
             valign: "middle"
+
             text_size: self.size
+
+            shorten: True
+            shorten_from: "right"
 
         Label:
             text: ("Password: " + root.password) if root.password_visible else "Password: ••••••••••"
-            font_size: sp(12)
+
+            font_size: sp(11)
+
             color: 0.72, 0.74, 0.80, 1
+
             halign: "left"
             valign: "middle"
+
             text_size: self.size
 
+            shorten: True
+            shorten_from: "right"
+
+    # Buttons
     BoxLayout:
+
         size_hint_x: None
-        width: dp(250)
-        spacing: dp(5)
+
+        # Reduced fixed width
+        width: dp(190)
+
+        spacing: dp(4)
 
         Button:
             text: "HIDE" if root.password_visible else "SHOW"
+
+            font_size: sp(10)
+
             background_normal: ""
             background_color: 0.16, 0.18, 0.23, 1
+
             on_release:
                 root.toggle_password()
 
         Button:
             text: "EDIT"
+
+            font_size: sp(10)
+
             background_normal: ""
             background_color: 0.16, 0.18, 0.23, 1
+
             on_release:
                 root.edit_account()
 
         Button:
             text: "DELETE"
+
+            font_size: sp(10)
+
             background_normal: ""
             background_color: 0.30, 0.12, 0.13, 1
+
             on_release:
                 root.delete_account()
 
@@ -419,180 +616,295 @@ ScreenManager:
 
     orientation: "vertical"
 
-    padding: dp(15), dp(30), dp(15), dp(15)
-    spacing: dp(6)
+    padding: dp(15), dp(20), dp(15), dp(12)
+
+    spacing: dp(5)
 
     canvas.before:
         Color:
             rgba: 0.075, 0.08, 0.11, 1
+
         Rectangle:
             pos: self.pos
             size: self.size
 
-    Label:
-        text: "Website"
-        size_hint_y: None
-        height: dp(25)
-        halign: "left"
-        text_size: self.size
+    # Scrollable content
+    ScrollView:
+        id: form_scroll
 
-    TextInput:
-        id: website
-        hint_text: "example.com"
-        multiline: False
-        size_hint_y: None
-        height: dp(45)
-        padding: dp(12), dp(12)
-        background_normal: ""
-        background_color: 0.12, 0.13, 0.17, 1
-        foreground_color: 1, 1, 1, 1
-
-    Label:
-        text: "Username"
-        size_hint_y: None
-        height: dp(25)
-        halign: "left"
-        text_size: self.size
-
-    TextInput:
-        id: username
-        hint_text: "Username / Email"
-        multiline: False
-        size_hint_y: None
-        height: dp(45)
-        padding: dp(12), dp(12)
-        background_normal: ""
-        background_color: 0.12, 0.13, 0.17, 1
-        foreground_color: 1, 1, 1, 1
-
-    Label:
-        text: "Password"
-        size_hint_y: None
-        height: dp(25)
-        halign: "left"
-        text_size: self.size
-
-    BoxLayout:
-        size_hint_y: None
-        height: dp(45)
-        spacing: dp(5)
-
-        TextInput:
-            id: password
-            hint_text: "Password"
-            password: not root.password_visible
-            multiline: False
-            padding: dp(12), dp(12)
-            background_normal: ""
-            background_color: 0.12, 0.13, 0.17, 1
-            foreground_color: 1, 1, 1, 1
-
-        Button:
-            text: "SHOW" if not root.password_visible else "HIDE"
-            size_hint_x: None
-            width: dp(75)
-            background_normal: ""
-            background_color: 0.17, 0.19, 0.24, 1
-            on_release:
-                root.toggle_password_visibility()
-
-    Label:
-        text: "Notes"
-        size_hint_y: None
-        height: dp(25)
-        halign: "left"
-        text_size: self.size
-
-    TextInput:
-        id: notes
-        hint_text: "Optional notes..."
-        multiline: True
-        size_hint_y: None
-        height: dp(70)
-        padding: dp(12), dp(10)
-        background_normal: ""
-        background_color: 0.12, 0.13, 0.17, 1
-        foreground_color: 1, 1, 1, 1
-
-    Label:
-        text: "Photo"
-        size_hint_y: None
-        height: dp(25)
-        halign: "left"
-        text_size: self.size
-
-    BoxLayout:
-        size_hint_y: None
-        height: dp(95)
-        spacing: dp(10)
-
-        Image:
-            id: preview
-            source: root.preview_source
-            fit_mode: "contain"
-            size_hint_x: None
-            width: dp(95)
+        do_scroll_x: False
+        do_scroll_y: True
 
         BoxLayout:
             orientation: "vertical"
+
+            size_hint_y: None
+            height: self.minimum_height
+
             spacing: dp(5)
 
+            # Website
             Label:
-                id: selected_photo_label
-                text: root.selected_photo if root.selected_photo else "No photo selected"
-                font_size: sp(12)
-                color: 0.65, 0.68, 0.75, 1
+                text: "Website"
+
+                size_hint_y: None
+                height: dp(23)
+
                 halign: "left"
                 valign: "middle"
+
+                text_size: self.size
+
+            TextInput:
+                id: website
+
+                hint_text: "example.com"
+
+                multiline: False
+
+                size_hint_y: None
+                height: dp(44)
+
+                padding: dp(12), dp(11)
+
+                background_normal: ""
+                background_color: 0.12, 0.13, 0.17, 1
+
+                foreground_color: 1, 1, 1, 1
+
+            # Username
+            Label:
+                text: "Username"
+
+                size_hint_y: None
+                height: dp(23)
+
+                halign: "left"
+                valign: "middle"
+
+                text_size: self.size
+
+            TextInput:
+                id: username
+
+                hint_text: "Username / Email"
+
+                multiline: False
+
+                size_hint_y: None
+                height: dp(44)
+
+                padding: dp(12), dp(11)
+
+                background_normal: ""
+                background_color: 0.12, 0.13, 0.17, 1
+
+                foreground_color: 1, 1, 1, 1
+
+            # Password
+            Label:
+                text: "Password"
+
+                size_hint_y: None
+                height: dp(23)
+
+                halign: "left"
+                valign: "middle"
+
                 text_size: self.size
 
             BoxLayout:
                 size_hint_y: None
-                height: dp(40)
+                height: dp(44)
+
                 spacing: dp(5)
 
-                Button:
-                    text: "CHOOSE PHOTO"
+                TextInput:
+                    id: password
+
+                    hint_text: "Password"
+
+                    password: not root.password_visible
+
+                    multiline: False
+
+                    padding: dp(12), dp(11)
+
                     background_normal: ""
-                    background_color: 0.16, 0.30, 0.55, 1
-                    on_release:
-                        root.choose_photo()
+                    background_color: 0.12, 0.13, 0.17, 1
+
+                    foreground_color: 1, 1, 1, 1
 
                 Button:
-                    text: "REMOVE"
+                    text: "SHOW" if not root.password_visible else "HIDE"
+
+                    size_hint_x: None
+                    width: dp(72)
+
                     background_normal: ""
-                    background_color: 0.28, 0.13, 0.14, 1
+                    background_color: 0.17, 0.19, 0.24, 1
+
                     on_release:
-                        root.remove_photo()
+                        root.toggle_password_visibility()
 
-    Label:
-        id: form_status
-        text: ""
-        color: 1, 0.35, 0.35, 1
-        font_size: sp(12)
-        text_size: self.width, None
-        halign: "center"
-        valign: "middle"
-        size_hint_y: None
-        height: dp(35)
+            # Notes
+            Label:
+                text: "Notes"
 
-    Widget:
+                size_hint_y: None
+                height: dp(23)
 
+                halign: "left"
+                valign: "middle"
+
+                text_size: self.size
+
+            TextInput:
+                id: notes
+
+                hint_text: "Optional notes..."
+
+                multiline: True
+
+                size_hint_y: None
+                height: dp(65)
+
+                padding: dp(12), dp(10)
+
+                background_normal: ""
+                background_color: 0.12, 0.13, 0.17, 1
+
+                foreground_color: 1, 1, 1, 1
+
+            # Photo
+            Label:
+                text: "Photo"
+
+                size_hint_y: None
+                height: dp(23)
+
+                halign: "left"
+                valign: "middle"
+
+                text_size: self.size
+
+            BoxLayout:
+
+                size_hint_y: None
+                height: dp(90)
+
+                spacing: dp(8)
+
+                Image:
+                    id: preview
+
+                    source: root.preview_source
+
+                    fit_mode: "contain"
+
+                    size_hint_x: None
+
+                    # Responsive preview
+                    width: dp(85)
+
+                BoxLayout:
+                    orientation: "vertical"
+
+                    spacing: dp(4)
+
+                    Label:
+                        id: selected_photo_label
+
+                        text: root.selected_photo if root.selected_photo else "No photo selected"
+
+                        font_size: sp(11)
+
+                        color: 0.65, 0.68, 0.75, 1
+
+                        halign: "left"
+                        valign: "middle"
+
+                        text_size: self.size
+
+                        shorten: True
+                        shorten_from: "right"
+
+                    BoxLayout:
+
+                        size_hint_y: None
+                        height: dp(38)
+
+                        spacing: dp(4)
+
+                        Button:
+                            text: "CHOOSE PHOTO"
+
+                            font_size: sp(10)
+
+                            background_normal: ""
+                            background_color: 0.16, 0.30, 0.55, 1
+
+                            on_release:
+                                root.choose_photo()
+
+                        Button:
+                            text: "REMOVE"
+
+                            font_size: sp(10)
+
+                            size_hint_x: None
+                            width: dp(65)
+
+                            background_normal: ""
+                            background_color: 0.28, 0.13, 0.14, 1
+
+                            on_release:
+                                root.remove_photo()
+
+            # Status
+            Label:
+                id: form_status
+
+                text: ""
+
+                color: 1, 0.35, 0.35, 1
+
+                font_size: sp(11)
+
+                text_size: self.width, None
+
+                halign: "center"
+                valign: "middle"
+
+                size_hint_y: None
+                height: dp(35)
+
+            Widget:
+                size_hint_y: None
+                height: dp(5)
+
+    # Bottom buttons always visible
     BoxLayout:
+
         size_hint_y: None
-        height: dp(48)
+        height: dp(46)
+
         spacing: dp(8)
 
         Button:
             text: "CANCEL"
+
             background_normal: ""
             background_color: 0.17, 0.18, 0.22, 1
+
             on_release:
                 root.cancel()
 
         Button:
             text: "SAVE"
+
             background_normal: ""
             background_color: 0.18, 0.42, 0.85, 1
+
             on_release:
                 root.save()
